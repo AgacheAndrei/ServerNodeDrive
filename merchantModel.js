@@ -1,4 +1,7 @@
+
+
 const Pool = require('pg').Pool
+
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -26,7 +29,7 @@ const getMerchants = async () => {
       throw new Error("Internal server error");
     }
   };
-  //create a new merchant record in the databsse
+  //create a new merchant record in the database
   const createMerchant = (body) => {
     return new Promise(function (resolve, reject) {
       const { name, email } = body;
