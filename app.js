@@ -49,14 +49,6 @@ const port = process.env.PORT || 4090;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Validation middleware
-app.use((req, res, next) => {
-  if (!req.body.warning || !req.body.description) {
-    return res.status(400).json({ error: "Both warning and description are required." });
-  }
-  next();
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -67,26 +59,39 @@ app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.get("/logs", async (req, res) => {
+app.post("/log", async (req, res) => {
   try {
-    const logs = await Log.findAll();
+    const { warning, description } = req.body;
+    console.log("Received body:", req.body); // Add this line for debugging
+    const newLog = await Log.create({ warning, description });
+    res.json(newLog);
+  } catch (error) {
+    next(error);
+  }
+});
+  
+app.get("/logs", async (req, res) => {
+  const { warning, description } = req.body;
+
+  try {
+    const logs = await Log.findAll({
+      where: {
+        // Your conditions based on warning and description
+      },
+    });
+
     res.json(logs);
   } catch (error) {
     next(error);
   }
 });
 
-app.post("/logs", async (req, res) => {
-    try {
-      const { warning, description } = req.body;
-      console.log("Received body:", req.body); // Add this line for debugging
-      const newLog = await Log.create({ warning, description });
-      res.json(newLog);
-    } catch (error) {
-      next(error);
+app.use((req, res, next) => {
+    if (!req.body.warning || !req.body.description) {
+      return res.status(400).json({ error: "Both warning and description are required." });
     }
+    next();
   });
-  
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
